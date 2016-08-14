@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="budgetApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Budget Calculator</title>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"
+            integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+    <script src="https://code.angularjs.org/1.5.8/angular-route.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/taxCalculations.js"></script>
+
+</head>
+<body ng-controller="BudgetController">
+<h1>{{title}}</h1>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-12 col-md-6 col-lg-7">
+            <div id="salaryDiv">
+                <h2>{{incomeTitle}}</h2>
+                <div class="alert alert-warning" ng-show="salaryForm.$dirty && salaryForm.$invalid">
+                    Please enter a valid salary
+                </div>
+                <form class="form-horizontal" name="salaryForm">
+                    <div class="form-group text-center">
+                        <label class="control-label pull-left col-md-offset-1">What Is Your Annual Salary?</label>
+                        <div class="col-md-5 col-lg-4">
+                            <div class="input-group">
+                                <div class="input-group-addon">$</div>
+                                <input type="number" class="form-control" placeholder="amount"
+                                       ng-model="salaryFormObj.salary" ng-disabled="showExpenseDiv"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group text-center">
+                        <label for="stateSelect" class="control-label pull-left col-md-offset-1">Which State Do You Live
+                            In?</label>
+                        <div class="col-md-5 col-lg-4">
+                            <select id="stateSelect" class="form-control" ng-model="salaryFormObj.state" ng-disabled="showExpenseDiv">
+                                <option ng-repeat="state in stateOptions" value={{state.id}}>{{state.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group text-center">
+                        <button ng-click="salaryForm.$valid && saveForm('salaryForm', salaryFormObj)" ng-disabled="showExpenseDiv"
+                                class="btn btn-success btn-s"><span
+                                class="glyphicon glyphicon-ok"></span> Save</button>
+                    </div>
+
+                </form>
+            </div>
+            <div ng-if="showExpenseDiv">
+                <h3>Expenses</h3>
+                <table class="table table-responsive" id="tableExpenses">
+                    <tr>
+                        <th>Category</th>
+                        <th>Name</th>
+                        <th>Cost</th>
+                        <th>Total Cost</th>
+                        <th>Edit/Delete</th>
+                    </tr>
+                    <tr ng-repeat="expense in expenses">
+                        <td>{{expense.category}}</td>
+                        <td>{{expense.name}}</td>
+                        <td>{{expense.cost | currency}}</td>
+                        <td>{{expense.cost | currency}} x {{expense.frequency}} = {{expense.totalCost | currency}}</td>
+                        <td>
+                            <a ng-click="editExpense(expense)" class="btn btn-primary btn-s"><span
+                                    class="glyphicon glyphicon-pencil"></span></a>
+                            <button ng-click="deleteExpense(expense.id)" type="button"
+                                    class="btn btn-danger btn-s btn-separation-left"><span
+                                    class="glyphicon glyphicon-trash"></span></button>
+                        </td>
+                    </tr>
+                </table>
+                <form class="form-inline" name="newExpenseForm" ng-show="showAddExpenseForm">
+                    <div class="form-group">
+                        <input type="text" placeholder="Category" class="form-control" ng-model="newExpense.category">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="Name" class="form-control" ng-model="newExpense.name">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" placeholder="$ Cost" class="form-control" ng-model="newExpense.cost">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" placeholder="Times Paid Annually" class="form-control"
+                               ng-model="newExpense.frequency">
+                    </div>
+                    <button ng-click="saveExpense(newExpense)" class="btn btn-success btn-s"><span
+                            class="glyphicon glyphicon-ok"></span></button>
+                </form>
+
+                <!-- Modal -->
+                <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                        aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="myModalLabel">Edit Expense</h4>
+                            </div>
+                            <div class="modal-body">
+                                <form name="editExpenseForm" class="form-horizontal">
+                                    <div class="form-group row">
+                                        <label for="editCategory" class="col-xs-3">Expense Category: </label>
+                                        <div class="col-xs-4">
+                                            <input type="text" id="editCategory" class="form-control"
+                                                   ng-model="editExpense.category" ng-required="true">
+                                        </div>
+
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="editName" class="col-xs-3">Expense Name:</label>
+                                        <div class="col-xs-4">
+                                            <input type="text" id="editName" class="form-control"
+                                                   ng-model="editExpense.name" ng-required="true">
+                                        </div>
+
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="editCost" class="col-xs-3">Expense Cost:</label>
+                                        <div class="input-group col-xs-3">
+                                            <div class="input-group-addon">$</div>
+                                            <input type="number" id="editCost" class="form-control"
+                                                   ng-model="editExpense.cost" ng-required="true">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="editFrequency" class="col-xs-3">Frequency (times paid per
+                                            year):</label>
+                                        <div class="col-xs-4">
+                                            <input type="number" id="editFrequency" class="form-control"
+                                                   ng-model="editExpense.frequency" ng-required="true">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary"
+                                        ng-click="editExpenseForm.$valid && saveExpense(editExpense)">Save changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <a ng-click="addNewExpense()" ng-show="showAddExpenseButton"
+                   class="btn btn-success pull-right button_new_expense" role="button"><span
+                        class="glyphicon glyphicon-plus"></span> New
+                    Expense</a>
+            </div>
+
+
+        </div>
+        <div class="col-xs-12 col-md-6 col-lg-5">
+            <h2>{{budgetTitle}}</h2>
+            <div class="incomeStatement" ng-show="salary != null">
+                <dl class="dl-horizontal">
+                    <dt class=>Before Tax Income</dt>
+                    <dd class="col-md-3 col-lg-2">{{salary | currency}}</dd>
+                </dl>
+                <dl class="dl-horizontal" ng-repeat="expense in expenses">
+                    <dt class=>{{expense.name}}</dt>
+                    <dd class="col-md-3 col-lg-2">({{expense.totalCost | currency}})</dd>
+                </dl>
+                <hr class="col-md-7">
+                <dl class="dl-horizontal">
+                    <dt>Final Income</dt>
+                    <dd class="col-md-3 col-lg-2">{{afterExpenses | currency}}</dd>
+                </dl>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>
