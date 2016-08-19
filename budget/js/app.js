@@ -134,6 +134,13 @@ app.factory('Budget', function ($http) {
 });
 
 
+app.directive('salaryTitle', function(){
+    return {
+        restrict: 'E',
+        templateUrl: 'views/salary-title.html'
+    };
+});
+
 app.controller('BudgetController', ['$scope', '$routeParams', '$q', 'Income', 'Taxes', 'Expenses', 'Budget',
     function ($scope, $routeParams, $q, Income, Taxes, Expenses, Budget) {
         if ($routeParams) {
@@ -227,6 +234,7 @@ app.controller('BudgetController', ['$scope', '$routeParams', '$q', 'Income', 'T
             $scope.newExpense = {};
         };
     }]);
+
 
 var Expense = function (id, category, name, cost, frequency) {
     return {

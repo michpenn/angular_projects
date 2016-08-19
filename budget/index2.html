@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="budgetApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Budget Calculator</title>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"
+            integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+    <script src="https://code.angularjs.org/1.5.8/angular-route.min.js"></script>
+    <script src="js/controller/app.js"></script>
+</head>
+<body ng-controller="incomeController as income">
+<div class="container-fluid">
+    <div class="row">
+        <h1>{{title}}</h1>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <div ng-controller="salaryController as salary">
+                <h2>{{salary.title}}</h2>
+                <form class="form-horizontal" name="salaryForm" novalidate>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <label>What Is Your Annual Income?</label>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <div class="input-group-addon">$</div>
+                                <input type="number" name="salary" class="form-control" placeholder="amount"
+                                       ng-model="salary.form.initialSalary" required/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': salaryForm.status.$invalid}">
+                        <div class="col-md-3">
+                            <label>What Is Your Tax Filing Status?</label>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control" ng-model="salary.form.filingStatus" name="status" required>
+                                <option ng-repeat="status in salary.filingStatusOptions" value="{{status.parameter}}">
+                                    {{status.name}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': salaryForm.state.$invalid}">
+                        <div class="col-md-3">
+                            <label>Which State Do You Live In?</label>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control" ng-model="salary.form.state" name="state" required>
+                                <option ng-repeat="state in salary.stateOptions" value="{{state}}">{{state}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button ng-show="!salary.salaryFormSubmitted" ng-click="salary.save(salary.form)">Save</button>
+                    <button ng-show="salary.salaryFormSubmitted" ng-click="salary.edit(salary.form)">Edit</button>
+                </form>
+            </div>
+            <div ng-show="initialSalary != null" ng-controller="expensesController as expenses">
+                <h2>{{expenses.title}}</h2>
+                <div ng-if="!expenses.showExpenseForm">
+                    <h4>Expense List</h4>
+                </div>
+                <div ng-if="expenses.showExpenseForm" ng-controller="expenseController as expense">
+                    <h4>{{expense.title}}</h4>
+                    <form class="form-horizontal" name="expenseForm" novalidate>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label>Select An Expense Category</label>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-control" ng-model="expense.expenseObj.category" required>
+                                    <option ng-repeat="category in expense.categories" value="{{category}}">
+                                        {{category}}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label>Please Enter The Expense Name</label>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" ng-model="expense.expenseObj.name" placeholder="Wholefoods, Rent, etc." required />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label>How Much Does It Cost?</label>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <div class="input-group-addon">$</div>
+                                    <input type="number" class="form-control" placeholder="0.00"
+                                           ng-model="expense.expenseObj.cost" required/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label>How Often Is It Paid?</label>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" ng-model="expense.expenseObj.frequency" placeholder="1 (annually), 12 (monthly), etc." required />
+                            </div>
+                        </div>
+                        <button ng-click="expenseForm.$valid && expense.save(expense.expenseObj)">Save</button><button ng-click="expenses.cancel()">Cancel</button>
+
+                    </form>
+
+                </div>
+                <button ng-click="expenses.addNewExpense()" ng-hide="expenses.showExpenseForm">Add Expense</button>
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-6">
+            <div ng-show="initialSalary != null">
+                <h2>Income Calculations</h2>
+                <dl class="dl-horizontal">
+                    <dt class="col-md-4">Before Tax Income</dt>
+                    <dd class="col-md-2">{{initialSalary | currency}}</dd>
+                </dl>
+                <hr class="col-xs-12 col-md-6">
+                <dl class="dl-horizontal">
+                    <dt class="col-md-4">Final Income</dt>
+                    <dd class="col-md-2">{{afterExpensesIncome | currency}}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
