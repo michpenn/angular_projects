@@ -75,20 +75,31 @@ app.config(['$httpProvider',function($httpProvider){
         self.cancel = function(){
             self.showExpenseForm = false;
         };
+
+
+        self.delete = function(id){
+            Expenses.delete(id);
+        };
+
+        self.edit = function(expense){
+            Expenses.editExpense(expense);
+            console.log('expense to edit: ', expense);
+        };
+
         $scope.$on('expenses_changed', function(){
             self.expenses = Expenses.expenses;
             self.showExpenseForm = false;
         });
 
-
-
-
+        $scope.$on('edit_expense', function(){
+            self.showExpenseForm = true;
+        });
 
 
 
     }]);
 
-    app.controller('expenseController', ['$scope', 'Expense', function($scope, Expense){
+    app.controller('expenseController', ['$scope', 'Expense','Expenses', function($scope, Expense, Expenses){
         var self = this;
         self.title = 'Expense Form';
         self.categories = Expense.categories;
@@ -96,17 +107,26 @@ app.config(['$httpProvider',function($httpProvider){
         self.save = function(expense){
             Expense.save(expense);
         };
-        //self.cancel = function(){};
+
+        self.edit = function(){
+            Expense.edit();
+            console.log('self:', self);
+        };
+        $scope.$on('expense_to_edit', function(){
+            self.expenseObj = Expenses.toEdit;
+            self.edit();
+            console.log('scope:', $scope);
+        })
     }]);
 
     app.factory('Expenses', ['$rootScope',function($rootScope){
         var service = {};
         service.expenses = [];
         service.categories = ['Living', 'Bills', 'Fun', 'Other'];
+        service.toEdit = {};
         service.addNewExpense = function(expense){
-            var id = service.getNewId();
-            expense.id = id;
-            //console.log('add an id:', expense, id);
+            expense.id = service.getNewId();
+            expense.totalCost = service.getTotalCost(expense.cost, expense.frequency);
             service.expenses.push(expense);
             $rootScope.$broadcast('expenses_changed');
         };
@@ -118,20 +138,44 @@ app.config(['$httpProvider',function($httpProvider){
                 var id = _.max(service.expenses, function(expense) {
                     return expense.id;
                 });
-                return id.id;
+                return id.id + 1;
             }
             else {
-                return 0;
+                return 1;
             }
         };
+
+        service.editExpense = function(expense) {
+          var clone = _.clone(service.getById(expense.id));
+            service.toEdit = clone;
+            $rootScope.$broadcast('expense_to_edit');
+        };
+
+
+        service.delete = function(id){
+            service.expenses = _.reject(service.expenses, function(expense){
+                return expense.id == id;
+            });
+            service.getExpenses();
+        };
+
+        service.getById = function(id){
+            return _.find(service.expenses, function(expense){
+                return expense.id === id;
+            })
+        };
+
+        service.getTotalCost = function(cost,frequency) {
+            return cost * frequency;
+        };
         service.getExpenses = function(){
-            return service.expenses;
+            $rootScope.$broadcast('expenses_changed');
         };
         return service;
 
     }]);
 
-    app.factory('Expense', ['Expenses',function(Expenses){
+    app.factory('Expense', ['Expenses','$rootScope',function(Expenses, $rootScope){
         var service = {};
         service.categories = Expenses.categories;
         service.save = function(expense) {
@@ -142,6 +186,10 @@ app.config(['$httpProvider',function($httpProvider){
                 Expenses.addNewExpense(expense);
             }
         };
+        service.edit = function(){
+            $rootScope.$broadcast('edit_expense');
+        };
+
         return service;
 
     }]);
