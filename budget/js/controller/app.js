@@ -1,30 +1,39 @@
 /**
  * Created by michpenn on 8/15/16.
  */
-(function(){
+(function () {
     var app = angular.module('budgetApp', []);
-app.config(['$httpProvider',function($httpProvider){
-    $httpProvider.defaults.headers.common = {};
-    $httpProvider.defaults.headers.post = {};
-    $httpProvider.defaults.headers.put = {};
-    $httpProvider.defaults.headers.patch = {};
-}]);
+    app.config(['$httpProvider', function ($httpProvider) {
+        $httpProvider.defaults.headers.common = {};
+        $httpProvider.defaults.headers.post = {};
+        $httpProvider.defaults.headers.put = {};
+        $httpProvider.defaults.headers.patch = {};
+    }]);
 
-    app.controller('incomeController', ['$scope', 'Salary',function($scope, Salary){
+    app.controller('incomeController', ['$scope', 'Salary', 'Expenses', function ($scope, Salary, Expenses) {
         var self = this;
         $scope.title = 'Create a Budget';
         $scope.initialSalary = null;
-        $scope.totalCostExpenses = 0;
+        $scope.totalCostExpenses = Expenses.totalCostExpenses;
         $scope.afterExpensesIncome = null;
+        $scope.expenses = Expenses.expenses;
 
-        $scope.$watch(function(){return Salary.salary},
-            function(salary){
-            $scope.initialSalary = salary;
+        $scope.$watch(function () {
+                return Salary.salary
+            },
+            function (salary) {
+                $scope.initialSalary = salary;
                 self.updateIncome();
+            });
+
+        $scope.$on('expenses_changed', function () {
+            $scope.expenses = Expenses.expenses;
+            $scope.totalCostExpenses = Expenses.totalCostExpenses;
+            self.updateIncome();
         });
 
-        self.updateIncome = function(){
-            if($scope.initialSalary != null) {
+        self.updateIncome = function () {
+            if ($scope.initialSalary != null) {
                 $scope.afterExpensesIncome = $scope.initialSalary - $scope.totalCostExpenses;
             }
 
@@ -32,7 +41,7 @@ app.config(['$httpProvider',function($httpProvider){
 
 
     }]);
-    app.controller('salaryController', ['$scope', 'Taxes', 'Salary', function($scope, Taxes, Salary){
+    app.controller('salaryController', ['$scope', 'Taxes', 'Salary', function ($scope, Taxes, Salary) {
         var self = this;
         self.title = 'Salary';
         self.form = {};
@@ -42,100 +51,123 @@ app.config(['$httpProvider',function($httpProvider){
         self.stateOptions = Taxes.stateOptions;
         self.state = null;
         self.salaryFormSubmitted = false;
-        self.save = function(object){
+        self.save = function (object) {
             self.salaryFormSubmitted = true;
             Salary.saveSalary(object.initialSalary);
             self.initialSalary = object.initialSalary;
-            if(object.filingStatus){
-               Taxes.calculateTaxes(object);
+            if (object.filingStatus) {
+                Taxes.calculateTaxes(object);
             }
             //console.log('save object:', object);
         };
-        self.edit = function(object){
+        self.edit = function (object) {
             Salary.saveSalary(object.initialSalary);
-            if(object.filingStatus){
+            if (object.filingStatus) {
                 Taxes.calculateTaxes(object);
             }
         };
 
 
-
     }]);
 
-    app.controller('expensesController', ['$scope','Expenses',function($scope, Expenses){
+    app.controller('expensesController', ['$scope', 'Expenses','Expense', function ($scope, Expenses, Expense) {
         var self = this;
         self.title = 'Expenses';
         self.expenses = Expenses.expenses;
         self.showExpenseForm = false;
 
 
-        self.addNewExpense = function(){
-            self.showExpenseForm = true;
+        self.addNewExpense = function () {
+            self.addOrEdit('add');
+
         };
-        self.cancel = function(){
+        self.cancel = function () {
             self.showExpenseForm = false;
         };
 
 
-        self.delete = function(id){
+        self.delete = function (id) {
             Expenses.delete(id);
         };
 
-        self.edit = function(expense){
-            Expenses.editExpense(expense);
-            console.log('expense to edit: ', expense);
+        self.edit = function (expense) {
+            self.addOrEdit('edit', expense);
+
         };
 
-        $scope.$on('expenses_changed', function(){
-            self.expenses = Expenses.expenses;
-            self.showExpenseForm = false;
-        });
+        self.addOrEdit = function (addOrEdit, expense) {
+            if (addOrEdit == 'add') {
+                Expense.newExpense();
+            }
+            else if (addOrEdit == 'edit') {
+                Expense.edit(expense);
+            }
 
-        $scope.$on('edit_expense', function(){
+        };
+
+        $scope.$on('expense_obj', function () {
             self.showExpenseForm = true;
         });
 
+        $scope.$on('expenses_changed', function () {
+            self.expenses = Expenses.expenses;
+            self.showExpenseForm = false;
+        });
+        /*
+         $scope.$on('edit_expense', function(){
+         self.showExpenseForm = true;
+         }); */
 
 
     }]);
 
-    app.controller('expenseController', ['$scope', 'Expense','Expenses', function($scope, Expense, Expenses){
+    app.controller('expenseController', ['$scope', 'Expense', 'Expenses', function ($scope, Expense, Expenses) {
         var self = this;
         self.title = 'Expense Form';
         self.categories = Expense.categories;
-        self.expenseObj = {};
-        self.save = function(expense){
+        self.expenseObj = Expense.expenseObj;
+
+
+        self.save = function (expense) {
             Expense.save(expense);
         };
 
-        self.edit = function(){
+        self.edit = function () {
             Expense.edit();
             console.log('self:', self);
         };
-        $scope.$on('expense_to_edit', function(){
-            self.expenseObj = Expenses.toEdit;
-            self.edit();
-            console.log('scope:', $scope);
-        })
+
+
+        $scope.$on('expense_obj', function () {
+            self.expenseObj = Expense.expenseObj;
+        });
     }]);
 
-    app.factory('Expenses', ['$rootScope',function($rootScope){
+    app.factory('Expenses', ['$rootScope', function ($rootScope) {
         var service = {};
         service.expenses = [];
         service.categories = ['Living', 'Bills', 'Fun', 'Other'];
         service.toEdit = {};
-        service.addNewExpense = function(expense){
+        service.totalCostExpenses = 0;
+
+        service.addNewExpense = function (expense) {
             expense.id = service.getNewId();
             expense.totalCost = service.getTotalCost(expense.cost, expense.frequency);
             service.expenses.push(expense);
-            $rootScope.$broadcast('expenses_changed');
+            service.getExpenses();
         };
-        service.updateExpense = function(expense){
-            console.log('update expense called', expense);
+        service.updateExpense = function (expense) {
+            expense.totalCost = expense.cost * expense.frequency;
+            var toUpdate = service.getById(expense.id);
+            if(expense.id = toUpdate.id) {
+                _.extend(toUpdate, expense);
+                service.getExpenses();
+            }
+
         };
-        service.getNewId = function(){
-            if(service.expenses.length > 0) {
-                var id = _.max(service.expenses, function(expense) {
+        service.getNewId = function () {
+            if (service.expenses.length > 0) {
+                var id = _.max(service.expenses, function (expense) {
                     return expense.id;
                 });
                 return id.id + 1;
@@ -145,78 +177,101 @@ app.config(['$httpProvider',function($httpProvider){
             }
         };
 
-        service.editExpense = function(expense) {
-          var clone = _.clone(service.getById(expense.id));
-            service.toEdit = clone;
-            $rootScope.$broadcast('expense_to_edit');
-        };
 
-
-        service.delete = function(id){
-            service.expenses = _.reject(service.expenses, function(expense){
+        service.delete = function (id) {
+            service.expenses = _.reject(service.expenses, function (expense) {
                 return expense.id == id;
             });
             service.getExpenses();
         };
 
-        service.getById = function(id){
-            return _.find(service.expenses, function(expense){
+        service.getById = function (id) {
+            return _.find(service.expenses, function (expense) {
                 return expense.id === id;
             })
         };
 
-        service.getTotalCost = function(cost,frequency) {
+        service.getTotalCost = function (cost, frequency) {
             return cost * frequency;
         };
-        service.getExpenses = function(){
+
+        service.sumTotalExpenses = function(){
+            if(service.expenses.length === 0){
+                return 0;
+            }
+            else {
+                return _.reduce(service.expenses, function(memo, num) {
+                    return memo + num.totalCost;
+                }, 0);
+
+            }
+
+        };
+
+        service.getExpenses = function () {
+            service.totalCostExpenses = service.sumTotalExpenses();
             $rootScope.$broadcast('expenses_changed');
         };
         return service;
 
     }]);
 
-    app.factory('Expense', ['Expenses','$rootScope',function(Expenses, $rootScope){
+    app.factory('Expense', ['Expenses', '$rootScope', function (Expenses, $rootScope) {
         var service = {};
+        service.expenseObj = null;
         service.categories = Expenses.categories;
-        service.save = function(expense) {
-            if(expense.hasOwnProperty('id')) {
+
+        service.newExpense = function () {
+            service.expenseObj = {};
+            service.expenseObjChanged();
+        };
+
+        service.edit = function(expense){
+            service.expenseObj = _.clone(Expenses.getById(expense.id));
+            service.expenseObjChanged();
+
+        };
+
+        service.save = function (expense) {
+            if (expense.hasOwnProperty('id')) {
                 Expenses.updateExpense(expense);
             }
-            else{
+            else {
                 Expenses.addNewExpense(expense);
             }
         };
-        service.edit = function(){
-            $rootScope.$broadcast('edit_expense');
+
+
+        service.expenseObjChanged = function () {
+            $rootScope.$broadcast('expense_obj');
         };
 
         return service;
 
     }]);
 
-    app.factory('Salary', function(){
+    app.factory('Salary', function () {
         var service = {};
         service.salary = null;
-        service.saveSalary = function(salary){
-            console.log('save salary called', salary);
+        service.saveSalary = function (salary) {
             service.salary = salary;
         };
 
         return service;
     });
 
-    app.factory('Taxes',['$http', '$q',function ($http, $q) {
+    app.factory('Taxes', ['$http', '$q', function ($http, $q) {
         var service = {};
         service.filingStatusOptions = [
             {name: 'single', id: 1, parameter: 'single'},
-            {name:'married', id:2, parameter: 'married'},
-            {name: 'married, filing separately', id:3, parameter: 'married_separately'},
-            {name:'head of household', id:4, parameter: 'head_of_household'},
+            {name: 'married', id: 2, parameter: 'married'},
+            {name: 'married, filing separately', id: 3, parameter: 'married_separately'},
+            {name: 'head of household', id: 4, parameter: 'head_of_household'},
             {name: 'none', id: 5, parameter: null}
-            ];
+        ];
         service.pay_periods = 1;
         service.stateOptions = ['CA', 'NY', 'NJ', 'FL'];
-        service.calculateTaxes = function(salary_data){
+        service.calculateTaxes = function (salary_data) {
             console.log('salary data:', salary_data);
             var config = {
                 'async': true,
@@ -235,15 +290,15 @@ app.config(['$httpProvider',function($httpProvider){
 
                 }
             };
-            $http.jsonp('http://taxee.io/api/v1/calculate/2016',config)
-                .then(function(res){
-                    console.log('res:',res);
+            $http.jsonp('http://taxee.io/api/v1/calculate/2016', config)
+                .then(function (res) {
+                    console.log('res:', res);
                 });
 
             //$.ajax(config).done(function(response){console.log('res:', response);});
             //$http(config).then(function(res){
-              //  console.log('success:', res)},
-                //function(res){console.log('error:', res)});
+            //  console.log('success:', res)},
+            //function(res){console.log('error:', res)});
         };
         return service;
 
