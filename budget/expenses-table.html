@@ -1,0 +1,25 @@
+<div ng-if="!expenses.showExpenseForm && expenses.expenses.length > 0">
+    <h4>Expense List</h4>
+    <div class="table-responsive">
+        <table class="table">
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Total Cost</th>
+                <th>Edit/Delete</th>
+            </tr>
+            <tr ng-repeat="expense in expenses.expenses">
+                <td>{{expense.category}}</td>
+                <td>{{expense.name}}</td>
+                <td>{{expense.totalCost | currency}}</td>
+                <td>
+                    <button class="btn btn-primary btn-s" ng-controller="expenseController as expenseCtrl" ng-click="expenses.edit(expense)">
+                        <span class="glyphicon glyphicon-pencil"></span></button>
+                    <button class="btn btn-danger btn-s" ng-click="expenses.delete(expense.id)">
+                        <span class="glyphicon glyphicon-trash"></span></button>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>

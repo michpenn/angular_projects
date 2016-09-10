@@ -3,12 +3,6 @@
  */
 (function () {
     var app = angular.module('budgetApp', []);
-    app.config(['$httpProvider', function ($httpProvider) {
-        $httpProvider.defaults.headers.common = {};
-        $httpProvider.defaults.headers.post = {};
-        $httpProvider.defaults.headers.put = {};
-        $httpProvider.defaults.headers.patch = {};
-    }]);
 
     app.controller('incomeController', ['$scope', 'Salary', 'Expenses', function ($scope, Salary, Expenses) {
         var self = this;
@@ -303,5 +297,42 @@
         return service;
 
     }]);
-    //app.controller('', function(){});
+
+    app.directive('budgetSheet', function(){
+        return {
+            restrict: 'E',
+            templateUrl: 'budget-sheet.html'
+        }
+    });
+
+    app.directive('salaryForm', function(){
+        return {
+            restrict: 'E',
+            templateUrl: 'salary-form.html'
+        }
+    });
+
+    app.directive('expensesTable', function(){
+        return {
+            restrict: 'E',
+            templateUrl: 'expenses-table.html'
+        }
+    });
+
+    app.directive('expenseForm', function(){
+        return {
+            restrict: 'E',
+            templateUrl: 'expense-form.html'
+        }
+    });
+    app.directive('appTitle', function(){
+        return {
+            restrict: 'E',
+            templateUrl: 'app-title.html'
+        }
+    });
+
+
+
+
 })();

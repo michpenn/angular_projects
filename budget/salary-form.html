@@ -1,0 +1,35 @@
+<div ng-controller="salaryController as salary">
+    <h2>{{salary.title}}</h2>
+    <form class="form-horizontal" name="salaryForm" novalidate>
+        <div class="form-group">
+                <label class="control-label col-md-4">What Is Your Annual Income?</label>
+            <div class="col-md-4">
+                <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="number" name="salary.form.salary" min="0" class="form-control" placeholder="amount"
+                           ng-model="salary.form.initialSalary" required/>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" ng-class="{'has-error': salaryForm.status.$invalid}">
+                <label class="control-label col-md-4">What Is Your Tax Filing Status?</label>
+            <div class="col-md-4">
+                <select class="form-control" ng-model="salary.form.filingStatus" name="status" required>
+                    <option ng-repeat="status in salary.filingStatusOptions" value="{{status.parameter}}">
+                        {{status.name}}
+                    </option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group" ng-class="{'has-error': salaryForm.state.$invalid}">
+                <label class="control-label col-md-4">Which State Do You Live In?</label>
+            <div class="col-md-4">
+                <select class="form-control" ng-model="salary.form.state" name="state" required>
+                    <option ng-repeat="state in salary.stateOptions" value="{{state}}">{{state}}</option>
+                </select>
+            </div>
+        </div>
+        <button ng-show="!salary.salaryFormSubmitted" ng-click="salary.save(salary.form)">Save</button>
+        <button ng-show="salary.salaryFormSubmitted" ng-click="salary.edit(salary.form)">Edit</button>
+    </form>
+</div>

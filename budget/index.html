@@ -24,148 +24,43 @@
 </head>
 <body ng-controller="incomeController as income">
 <div class="container-fluid">
-    <div class="row">
-        <h1>{{title}}</h1>
-    </div>
+
+    <app-title></app-title>
     <div class="row">
         <div class="col-xs-12 col-md-6">
-            <div ng-controller="salaryController as salary">
-                <h2>{{salary.title}}</h2>
-                <form class="form-horizontal" name="salaryForm" novalidate>
-                    <div class="form-group">
-                        <div class="col-md-3">
-                            <label>What Is Your Annual Income?</label>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="input-group">
-                                <div class="input-group-addon">$</div>
-                                <input type="number" name="salary" class="form-control" placeholder="amount"
-                                       ng-model="salary.form.initialSalary" required/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group" ng-class="{'has-error': salaryForm.status.$invalid}">
-                        <div class="col-md-3">
-                            <label>What Is Your Tax Filing Status?</label>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-control" ng-model="salary.form.filingStatus" name="status" required>
-                                <option ng-repeat="status in salary.filingStatusOptions" value="{{status.parameter}}">
-                                    {{status.name}}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group" ng-class="{'has-error': salaryForm.state.$invalid}">
-                        <div class="col-md-3">
-                            <label>Which State Do You Live In?</label>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-control" ng-model="salary.form.state" name="state" required>
-                                <option ng-repeat="state in salary.stateOptions" value="{{state}}">{{state}}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button ng-show="!salary.salaryFormSubmitted" ng-click="salary.save(salary.form)">Save</button>
-                    <button ng-show="salary.salaryFormSubmitted" ng-click="salary.edit(salary.form)">Edit</button>
-                </form>
-            </div>
+            <salary-form></salary-form>
+
             <div ng-show="initialSalary != null" ng-controller="expensesController as expenses">
                 <h2>{{expenses.title}}</h2>
-                <div ng-if="!expenses.showExpenseForm && expenses.expenses.length > 0">
-                    <h4>Expense List</h4>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <tr>
-                                <th>Category</th>
-                                <th>Name</th>
-                                <th>Total Cost</th>
-                                <th>Edit/Delete</th>
-                            </tr>
-                            <tr ng-repeat="expense in expenses.expenses">
-                                <td>{{expense.category}}</td>
-                                <td>{{expense.name}}</td>
-                                <td>{{expense.totalCost | currency}}</td>
-                                <td>
-                                    <button ng-controller="expenseController as expenseCtrl" ng-click="expenses.edit(expense)">Edit</button>
-                                    <button ng-click="expenses.delete(expense.id)">Delete</button>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-
-
+                <div class="row">
+                    <expenses-table></expenses-table>
                 </div>
+
+
+
                 <div ng-if="expenses.showExpenseForm" ng-controller="expenseController as expense">
                     <h4>{{expense.title}}</h4>
-                    <form class="form-horizontal" name="expenseForm" novalidate>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                <label>Select An Expense Category</label>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-control" ng-model="expense.expenseObj.category" required>
-                                    <option ng-repeat="category in expense.categories" value="{{category}}">
-                                        {{category}}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                <label>Please Enter The Expense Name</label>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="text" class="form-control" ng-model="expense.expenseObj.name" placeholder="Wholefoods, Rent, etc." required />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                <label>How Much Does It Cost?</label>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="input-group">
-                                    <div class="input-group-addon">$</div>
-                                    <input type="number" class="form-control" placeholder="0.00"
-                                           ng-model="expense.expenseObj.cost" required/>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                <label>How Often Is It Paid?</label>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="number" class="form-control" ng-model="expense.expenseObj.frequency" placeholder="1 (annually), 12 (monthly), etc." required />
-                            </div>
-                        </div>
-                        <button ng-click="expenseForm.$valid && expense.save(expense.expenseObj)">Save</button><button ng-click="expenses.cancel()">Cancel</button>
-
-                    </form>
+                    <expense-form></expense-form>
 
                 </div>
-                <button ng-click="expenses.addNewExpense()" ng-hide="expenses.showExpenseForm">Add Expense</button>
+                <div class="block">
+                    <button ng-click="expenses.addNewExpense()" ng-hide="expenses.showExpenseForm">Add Expense</button>
+                </div>
+
+
             </div>
         </div>
+
         <div class="col-xs-12 col-md-6">
             <div ng-show="initialSalary != null">
-                <h2>Income Calculations</h2>
-                <dl class="dl-horizontal">
-                    <dt class="col-md-4">Before Tax Income</dt>
-                    <dd class="col-md-2">{{initialSalary | currency}}</dd>
-                </dl>
-                <dl class="dl-horizontal" ng-repeat="expense in expenses">
-                    <dt class="col-md-4">{{expense.category}}:{{expense.name}}</dt>
-                    <dd class="col-md-2">{{expense.totalCost | currency}}</dd>
-                </dl>
-                <hr class="col-xs-12 col-md-6">
-                <dl class="dl-horizontal">
-                    <dt class="col-md-4">Final Income</dt>
-                    <dd class="col-md-2">{{afterExpensesIncome | currency}}</dd>
-                </dl>
+                <budget-sheet></budget-sheet>
             </div>
         </div>
+
     </div>
+
+
 </div>
+
 </body>
 </html>
