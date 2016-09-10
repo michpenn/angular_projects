@@ -22,7 +22,7 @@
     <script src="https://code.angularjs.org/1.5.8/angular-route.min.js"></script>
     <script src="js/controller/app.js"></script>
 </head>
-<body ng-controller="incomeController as income">
+<body ng-cloak ng-controller="incomeController as income">
 <div class="container-fluid">
 
     <app-title></app-title>
@@ -30,27 +30,29 @@
         <div class="col-xs-12 col-md-6">
             <salary-form></salary-form>
 
-            <div ng-show="initialSalary != null" ng-controller="expensesController as expenses">
-                <h2>{{expenses.title}}</h2>
-                <div class="row">
-                    <expenses-table></expenses-table>
+            <!--<expenses-section></expenses-section>-->
+            <div ng-show="initialSalary != null">
+
+                <div ng-controller="expensesController as expenses">
+
+                    <h2>{{expenses.title}}</h2>
+                    <div class="row">
+                        <expenses-table></expenses-table>
+                    </div>
+
+
+                    <div ng-if="expenses.showExpenseForm">
+                        <expense-form></expense-form>
+                    </div>
+
+
+                    <add-expense></add-expense>
+
+
+
                 </div>
-
-
-
-                <div ng-if="expenses.showExpenseForm" ng-controller="expenseController as expense">
-                    <h4>{{expense.title}}</h4>
-                    <expense-form></expense-form>
-
-                </div>
-                <div class="block">
-                    <button ng-click="expenses.addNewExpense()" ng-hide="expenses.showExpenseForm">Add Expense</button>
-                </div>
-
-
             </div>
         </div>
-
         <div class="col-xs-12 col-md-6">
             <div ng-show="initialSalary != null">
                 <budget-sheet></budget-sheet>

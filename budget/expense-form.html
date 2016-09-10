@@ -1,3 +1,5 @@
+<div ng-controller="expenseController as expense">
+<h4>{{expense.title}}</h4>
 <form class="form-horizontal" name="expenseForm" novalidate>
     <div class="form-group">
         <div class="col-md-3">
@@ -39,6 +41,10 @@
             <input type="number" class="form-control" ng-model="expense.expenseObj.frequency" placeholder="1 (annually), 12 (monthly), etc." required />
         </div>
     </div>
-    <button ng-click="expenseForm.$valid && expense.save(expense.expenseObj)">Save</button><button ng-click="expenses.cancel()">Cancel</button>
+
+    <button class="btn btn-info" ng-click="expenseForm.$valid && expense.save(expense.expenseObj)">Save</button>
+    <button class="btn btn-warning" ng-click="expenses.cancel()">Cancel</button>
+
 
 </form>
+</div>

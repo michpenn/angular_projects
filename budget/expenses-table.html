@@ -13,7 +13,8 @@
                 <td>{{expense.name}}</td>
                 <td>{{expense.totalCost | currency}}</td>
                 <td>
-                    <button class="btn btn-primary btn-s" ng-controller="expenseController as expenseCtrl" ng-click="expenses.edit(expense)">
+                    <button class="btn btn-primary btn-s" ng-controller="expenseController as expenseCtrl"
+                            ng-click="expenses.edit(expense)">
                         <span class="glyphicon glyphicon-pencil"></span></button>
                     <button class="btn btn-danger btn-s" ng-click="expenses.delete(expense.id)">
                         <span class="glyphicon glyphicon-trash"></span></button>
