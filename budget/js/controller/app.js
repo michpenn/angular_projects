@@ -140,11 +140,12 @@
     app.factory('Expenses', ['$rootScope', function ($rootScope) {
         var service = {};
         service.expenses = [];
-        service.categories = ['Living', 'Bills', 'Fun', 'Other'];
+        service.categories = ['Living', 'Bills', 'Fun','Taxes', 'Other'];
         service.toEdit = {};
         service.totalCostExpenses = 0;
 
         service.addNewExpense = function (expense) {
+            console.log(expense);
             expense.id = service.getNewId();
             expense.totalCost = service.getTotalCost(expense.cost, expense.frequency);
             service.expenses.push(expense);
@@ -254,7 +255,7 @@
         return service;
     });
 
-    app.factory('Taxes', ['$http', '$q', '$interpolate', function ($http, $q, $interpolate) {
+    app.factory('Taxes', ['$http', '$q', '$interpolate','Expenses', function ($http, $q, $interpolate, Expenses) {
         var service = {};
         service.filingStatusOptions = [
             {name: 'single', id: 1, parameter: 'single'},
@@ -285,12 +286,21 @@
 
             var dataFunc = $interpolate('state={{salary_data.state}}&filing_status={{salary_data.filingStatus}}&pay_periods=1&pay_rate={{salary_data.initialSalary}}');
             var url_encoded_string = dataFunc({salary_data:salary_data});
-            console.log('url:', url_encoded_string);
+
 
 
             $http.post('https://taxee.io/api/v2/calculate/2016', url_encoded_string,config)
                 .then(function (res) {
-                    console.log('res:', res);
+                    var taxes = res.data.annual;
+                    for(var taxType in taxes) {
+                        var obj ={};
+                        obj.category = 'Taxes';
+                        obj.name = taxType;
+                        obj.frequency = 1;
+                        obj.cost = taxes[taxType]['amount'];
+                        Expenses.addNewExpense(obj);
+
+                    }
                 });
 
         };
