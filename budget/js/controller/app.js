@@ -257,15 +257,9 @@
 
     app.factory('Taxes', ['$http', '$q', '$interpolate','Expenses', function ($http, $q, $interpolate, Expenses) {
         var service = {};
-        service.filingStatusOptions = [
-            {name: 'single', id: 1, parameter: 'single'},
-            {name: 'married', id: 2, parameter: 'married'},
-            {name: 'married, filing separately', id: 3, parameter: 'married_separately'},
-            {name: 'head of household', id: 4, parameter: 'head_of_household'},
-            {name: 'none', id: 5, parameter: null}
-        ];
+        service.filingStatusOptions = filingStatusOptions;
         service.pay_periods = 1;
-        service.stateOptions = ['CA', 'NY', 'NJ', 'FL'];
+        service.stateOptions = stateOptions;
         service.calculateTaxes = function (salary_data) {
             console.log('salary data:', salary_data);
             var config = {
