@@ -1,35 +1,44 @@
 <div ng-controller="salaryController as salary">
     <h2>{{salary.title}}</h2>
-    <form class="form-horizontal" name="salaryForm" novalidate>
-        <div class="form-group" ng-class="{'has-error': salaryForm.salary.$invalid && salaryForm.salary.$dirty}">
+
+        <form class="form-horizontal" name="salaryForm" novalidate>
+            <fieldset ng-disabled="(salary.salaryFormSubmitted) && (!salary.salaryFormEdit)">
+            <div class="form-group" ng-class="{'has-error': salaryForm.salary.$invalid && salaryForm.salary.$dirty}">
                 <label class="control-label col-md-4">What Is Your Annual Income?</label>
-            <div class="col-md-4">
-                <div class="input-group">
-                    <div class="input-group-addon">$</div>
-                    <input type="number" name="salary" min="0" class="form-control" placeholder="amount"
-                           ng-model="salary.form.initialSalary" required/>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <div class="input-group-addon">$</div>
+                        <input type="number" name="salary" min="0" class="form-control" placeholder="amount"
+                               ng-model="salary.form.initialSalary" required/>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="form-group" ng-class="{'has-error': salaryForm.status.$invalid && salaryForm.status.$dirty}">
+            <div class="form-group" ng-class="{'has-error': salaryForm.status.$invalid && salaryForm.status.$dirty}">
                 <label class="control-label col-md-4">What Is Your Tax Filing Status?</label>
-            <div class="col-md-4">
-                <select class="form-control" ng-model="salary.form.filingStatus" name="status" required>
-                    <option ng-repeat="status in salary.filingStatusOptions" value="{{status.parameter}}">
-                        {{status.name}}
-                    </option>
-                </select>
+                <div class="col-md-4">
+                    <select class="form-control" ng-model="salary.form.filingStatus" name="status" required>
+                        <option ng-repeat="status in salary.filingStatusOptions" value="{{status.parameter}}">
+                            {{status.name}}
+                        </option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="form-group" ng-class="{'has-error': salaryForm.state.$invalid && salaryForm.state.$dirty}">
+            <div class="form-group" ng-class="{'has-error': salaryForm.state.$invalid && salaryForm.state.$dirty}">
                 <label class="control-label col-md-4">Which State Do You Live In?</label>
-            <div class="col-md-4">
-                <select class="form-control" ng-model="salary.form.state" name="state" required>
-                    <option ng-repeat="state in salary.stateOptions" value="{{state}}">{{state}}</option>
-                </select>
+                <div class="col-md-4">
+                    <select class="form-control" ng-model="salary.form.state" name="state" required>
+                        <option ng-repeat="state in salary.stateOptions" value="{{state}}">{{state}}</option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <button class="btn btn-success" ng-show="!salary.salaryFormSubmitted" ng-click="salaryForm.salary.$valid && salary.save(salary.form)">Save</button>
-        <button class="btn btn-success" ng-show="salary.salaryFormSubmitted" ng-click="salary.edit(salary.form)">Edit</button>
+    </fieldset>
+    <button class="btn btn-success" ng-show="!salary.salaryFormSubmitted"
+            ng-click="salaryForm.salary.$valid && salary.save(salary.form)">Save
+    </button>
+    <!--<button class="btn btn-success" ng-show="salary.salaryFormSubmitted" ng-click="salary.edit(salary.form)">Edit-->
+    <!--</button>-->
+            <button class="btn btn-success" ng-show="(salary.salaryFormSubmitted) && (!salary.salaryFormEdit)" ng-click="salary.editClicked()">Edit</button>
+            <button class="btn btn-success" ng-show="(salary.salaryFormSubmitted) && (salary.salaryFormEdit)" ng-click="salary.updateSalary(salary.form)">Update</button>
+
     </form>
 </div>

@@ -4,7 +4,7 @@
     <dd class="col-md-2">{{initialSalary | currency}}</dd>
 </dl>
 <dl class="dl-horizontal" ng-repeat="expense in expenses">
-    <dt class="col-md-4">{{expense.category}}:{{expense.name}}</dt>
+    <dt class="col-md-4">{{expense.category}}: {{expense.name | capitalize}}</dt>
     <dd class="col-md-2">{{expense.totalCost | currency}}</dd>
 </dl>
 <hr class="col-xs-12 col-md-6">

@@ -13,7 +13,7 @@
                     </tr>
                     <tr ng-repeat="expense in expenses.expenses">
                         <td>{{expense.category}}</td>
-                        <td>{{expense.name}}</td>
+                        <td>{{expense.name | capitalize}}</td>
                         <td>{{expense.totalCost | currency}}</td>
                         <td>
                             <button class="btn btn-primary btn-s" ng-controller="expenseController as expenseCtrl"
